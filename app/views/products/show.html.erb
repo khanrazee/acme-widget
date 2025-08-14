@@ -1,0 +1,29 @@
+<div class="container mt-5 d-flex justify-content-center align-items-center">
+  <div class="row w-100">
+    <div class="col-md-8 mx-auto">
+      <div class="card">
+        <div class="card-header bg-light">
+          <h1 class="h3 mb-0"><%= @product.name %></h1>
+        </div>
+        
+        <div class="card-body">
+          <div class="row">
+            <div class="col-12">
+              <%= render 'product_details', product: @product %>
+              
+              <hr class="my-4">
+              
+              <%= render 'product_actions', product: @product %>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-footer text-end">
+          <%= link_to products_path, class: "btn btn-secondary" do %>
+            <i class="fa fa-arrow-left"></i> Back to Products
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

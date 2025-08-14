@@ -1,0 +1,92 @@
+<div class="container mt-5">
+  <h1 class="mb-4">Your Shopping Cart</h1>
+  
+  <% if @cart.cart_items.any? %>
+    <div id="cart-items">
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Price</th>
+              <th>Quantity</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @cart.cart_items.includes(:product).each do |item| %>
+              <tr id="cart-item-<%= item.product_id %>">
+                <td><%= item.product.name %></td>
+                <td class="price"><%= number_to_currency(item.unit_price_in_currency) %></td>
+                <td>
+                  <%= form_with url: update_quantity_cart_path(product_id: item.product.id), 
+                              method: :patch, 
+                              class: 'update-quantity-form',
+                              data: { remote: true } do |f| %>
+                    <%= f.number_field :quantity, 
+                                    value: item.quantity, 
+                                    min: 0, 
+                                    class: 'form-control form-control-sm d-inline-block quantity-input',
+                                    style: 'width: 80px;' %>
+                  <% end %>
+                </td>
+                <td class="item-total"><%= number_to_currency(item.total_price_in_currency) %></td>
+              </tr>
+            <% end %>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="3" class="text-end fw-bold">Total:</td>
+              <td id="cart-total" class="fw-bold"><%= number_to_currency(@cart.total_price_cents / 100.0) %></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      
+      <div class="text-end">
+        <%= link_to 'Checkout', '#', class: 'btn btn-primary btn-lg' %>
+      </div>
+    </div>
+  <% else %>
+    <div class="alert alert-info">
+      Your cart is empty. <%= link_to 'Continue shopping', root_path, class: 'alert-link' %>
+    </div>
+  <% end %>
+</div>
+
+<%= javascript_tag nonce: true do %>
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.quantity-input').forEach(input => {
+      input.addEventListener('change', function() {
+        this.form.requestSubmit();
+      });
+    });
+    
+    document.querySelectorAll('.update-quantity-form').forEach(form => {
+      form.addEventListener('ajax:success', function(event) {
+        const [data, status, xhr] = event.detail;
+        const itemRow = this.closest('tr');
+        const quantity = parseInt(this.querySelector('.quantity-input').value);
+        
+        if (quantity === 0) {
+          itemRow.remove();
+        } else {
+          const price = parseFloat(itemRow.querySelector('.price').textContent.replace(/[^\d.-]/g, ''));
+          const total = (price * quantity).toFixed(2);
+          itemRow.querySelector('.item-total').textContent = '$' + total;
+        }
+        
+        document.getElementById('cart-total').textContent = data.total_price;
+        
+        if (document.querySelectorAll('.update-quantity-form').length === 0) {
+          window.location.reload();
+        }
+      });
+      
+      form.addEventListener('ajax:error', function(event) {
+        console.error('Error updating cart:', event.detail);
+        alert('There was an error updating your cart. Please try again.');
+      });
+    });
+  });
+<% end %>

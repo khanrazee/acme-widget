@@ -1,0 +1,47 @@
+<div class="products-container">
+  <div class="products-header">
+    <h1>Products</h1>
+    <% if is_admin? %>
+      <div class="header-actions">
+        <%= link_to "Create New Product", new_product_path, class: "btn btn-primary" %>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="search-panel">
+    <%= search_form_for @q, html: { class: "search-form" } do |f| %>
+      <div class="search-fields">
+        <div class="search-field">
+          <%= f.label :code_cont, "Code contains" %>
+          <%= f.search_field :code_cont, class: "form-control" %>
+        </div>
+        
+        <div class="search-field">
+          <%= f.label :name_cont, "Name contains" %>
+          <%= f.search_field :name_cont, class: "form-control" %>
+        </div>
+        
+        <div class="search-field">
+          <%= f.label :price_gteq, "Min Price" %>
+          <%= f.number_field :price_gteq, step: 100, class: "form-control" %>
+        </div>
+        
+        <div class="search-field">
+          <%= f.label :price_lteq, "Max Price" %>
+          <%= f.number_field :price_lteq, step: 100, class: "form-control" %>
+        </div>
+      </div>
+      
+      <div class="search-actions">
+        <%= f.submit "Search", class: "btn btn-primary" %>
+        <%= link_to "Clear", products_path, class: "btn btn-outline" %>
+      </div>
+    <% end %>
+  </div>
+
+  <%= render 'products_table' %>
+  
+  <div class="back-link">
+    <%= link_to "Back to Home", root_path, class: "btn btn-outline" %>
+  </div>
+</div>
