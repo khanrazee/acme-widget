@@ -1,0 +1,134 @@
+<div class="home-container">
+  <div class="home-header d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1>Welcome to ACME Basket</h1>
+      <p class="tagline mb-0">Your one-stop shop for quality widgets</p>
+    </div>
+    <% if user_signed_in? %>
+      <div class="d-flex gap-2">
+        <% if is_customer? %>
+          <%= link_to cart_path, class: "btn btn-primary position-relative" do %>
+            <i class="bi bi-cart"></i> My Cart
+            <% if current_user.cart&.cart_items&.any? %>
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+              <%= current_user.cart.cart_items.sum(:quantity) %>
+            </span>
+            <% end %>
+          <% end %>
+        <% end %>
+        <%= link_to destroy_user_session_path, data: { turbo_method: :delete }, class: "btn btn-outline-danger" do %>
+          <i class="bi bi-box-arrow-right me-1"></i> Sign out
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="home-content">
+    <% if user_signed_in? %>
+      <div class="user-welcome mb-5">
+        <div class="welcome-message">
+          <h2>Hello, <%= current_user.email.split('@').first.capitalize %>!</h2>
+          <p>Thank you for shopping with us. Browse our selection of widgets below.</p>
+        </div>
+        <div class="user-actions d-flex flex-wrap gap-2 align-items-center justify-content-center justify-content-md-start mb-3">
+          <div class="btn-group mb-2 mb-md-0 gap-2" role="group" aria-label="Product actions">
+            <% if is_admin? %>
+              <%= link_to new_product_path, class: "btn btn-success" do %>
+                <i class="bi bi-plus-circle me-1"></i> Create Product
+              <% end %>
+            <% end %>
+            <%= link_to products_path, class: "btn btn-info" do %>
+              <i class="bi bi-grid me-1"></i> All Products
+            <% end %>
+          </div>
+          
+          <div class="btn-group mb-2 mb-md-0" role="group" aria-label="Order actions">
+            <%= link_to orders_path, class: "btn btn-info" do %>
+              <i class="bi bi-bag me-1"></i> <%= is_admin? ? 'All Orders' : 'My Orders' %>
+            <% end %>
+          </div>
+        </div>
+      </div>
+      
+      <div class="products-grid">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h2 class="mb-0">Featured Products</h2>
+          <%= link_to products_path, class: "btn btn-outline-primary btn-sm" do %>
+            <i class="bi bi-grid-3x3-gap me-1"></i> View All
+          <% end %>
+        </div>
+        
+        <div class="row">
+          <% @products.each do |product| %>
+            <div class="col-md-4 mb-4">
+              <div class="card h-100 shadow-sm border-0 rounded-3 hover-shadow position-relative">
+                <% if product.special_offer %>
+                  <div class="position-absolute top-0 end-0 m-2">
+                    <span class="badge bg-danger">Special Offer</span>
+                  </div>
+                <% end %>
+                <div class="card-body">
+                  <h5 class="card-title fw-bold"><%= product.name %></h5>
+                  <p class="card-text text-muted small">Product Code: <%= product.code %></p>
+                  <p class="h5 mb-3 text-primary"><%= number_to_currency(product.price / 100.0) %></p>
+                  <% if product.special_offer %>
+                    <p class="text-danger small"><i class="bi bi-tag-fill"></i> Buy one, get second half price!</p>
+                  <% end %>
+                </div>
+                <div class="card-footer bg-white border-0 d-flex justify-content-between">
+                  <%= link_to product_path(product), class: "btn btn-sm btn-outline-secondary" do %>
+                    <i class="bi bi-eye me-1"></i> Details
+                  <% end %>
+                  <% if is_customer? %>
+                    <%= button_to add_to_cart_cart_path(current_user.cart), method: :patch, params: { product_id: product.id, quantity: 1 }, class: "btn btn-sm btn-primary" do %>
+                      <i class="bi bi-cart-plus me-1"></i> Add to Cart
+                    <% end %>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% else %>
+      <div class="guest-welcome shadow-lg rounded-4 p-0 overflow-hidden">
+        <div class="row g-0">
+          <div class="col-lg-6 bg-primary bg-gradient p-5 d-flex flex-column justify-content-center text-white">
+            <h2 class="display-4 fw-bold mb-4">Shop the Best Widgets</h2>
+            <p class="lead fs-4 mb-4">Join our community of satisfied customers and discover premium quality widgets at competitive prices.</p>
+            <div class="d-flex flex-column flex-sm-row gap-3 mt-3">
+              <div class="d-flex align-items-center">
+                <i class="bi bi-truck fs-2 me-3"></i>
+                <div>
+                  <h5 class="mb-0">Fast Shipping</h5>
+                  <p class="mb-0 small">Delivered to your door</p>
+                </div>
+              </div>
+              <div class="d-flex align-items-center">
+                <i class="bi bi-shield-check fs-2 me-3"></i>
+                <div>
+                  <h5 class="mb-0">Secure Shopping</h5>
+                  <p class="mb-0 small">100% protected checkout</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <div class="welcome-message text-center p-5">
+              <h3 class="fw-bold text-primary mb-4">Get Started Today</h3>
+              <p class="mb-4">Sign in to start adding items to your basket and enjoy special offers!</p>
+              <div class="auth-buttons mt-5 d-flex flex-column flex-sm-row justify-content-center gap-3">
+                <%= link_to new_user_session_path, class: "btn btn-primary btn-lg px-4 py-2" do %>
+                  <i class="bi bi-box-arrow-in-right me-2"></i>Sign in
+                <% end %>
+                <%= link_to new_user_registration_path, class: "btn btn-outline-primary btn-lg px-4 py-2" do %>
+                  <i class="bi bi-person-plus me-2"></i>Create Account
+                <% end %>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

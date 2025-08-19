@@ -1,0 +1,26 @@
+<div class="product-details">
+  <div class="detail-card">
+    <h3>Product Information</h3>
+    
+    <div class="detail-row">
+      <div class="detail-label">Code</div>
+      <div class="detail-value"><%= product.code %></div>
+    </div>
+    
+    <div class="detail-row">
+      <div class="detail-label">Price</div>
+      <div class="detail-value price">
+        <%= number_to_currency(product.price_in_currency) %>
+        <% if product.special_offer %>
+          <span class="badge bg-success ms-2">Special Offer</span>
+          <div class="small text-success mt-1">Buy one, get second half price!</div>
+        <% end %>
+      </div>
+    </div>
+    
+    <div class="detail-row">
+      <div class="detail-label">Added On</div>
+      <div class="detail-value"><%= product.created_at.strftime("%B %d, %Y") %></div>
+    </div>
+  </div>
+</div>

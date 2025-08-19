@@ -1,0 +1,84 @@
+<div class="container mt-5">
+  <div class="row">
+    <div class="col-md-8 mx-auto">
+      <div class="card mb-4">
+        <div class="card-header bg-success text-white">
+          <h2>Order Confirmation</h2>
+          <p class="mb-0">Thank you for your purchase!</p>
+        </div>
+        <div class="card-body">
+          <div class="row mb-4">
+            <div class="col-md-12">
+              <h5>Order Information</h5>
+              <p><strong>Order #:</strong> <%= @order.id %></p>
+              <p><strong>Date:</strong> <%= @order.created_at.strftime("%B %d, %Y at %I:%M %p") %></p>
+              <p><strong>Status:</strong> <span class="badge bg-info"><%= @order.status.humanize %></span></p>
+            </div>
+          </div>
+          
+          <h5>Order Items</h5>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th>Unit Price</th>
+                <th class="text-end">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @order.order_line_items.each do |item| %>
+                <tr>
+                  <td>
+                    <%= item.product.name %>
+                    <% if item.product.special_offer %>
+                      <span class="badge bg-success ms-1">Special Offer</span>
+                    <% end %>
+                  </td>
+                  <td><%= item.quantity %></td>
+                  <td><%= number_to_currency(item.unit_price_in_currency) %></td>
+                  <td class="text-end">
+                    <%= number_to_currency(item.total_price_in_currency) %>
+                    <% if item.discount_applied? %>
+                      <div class="small text-success">
+                        You saved <%= number_to_currency(item.savings_in_currency) %>!
+                      </div>
+                    <% end %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+            <tfoot class="table-group-divider">
+              <% total_savings = @order.order_line_items.sum(&:savings_amount) %>
+              <% if total_savings > 0 %>
+              <tr class="text-success">
+                <th colspan="3" class="text-end">Special Offer Savings:</th>
+                <th class="text-end">-<%= number_to_currency(total_savings / 100.0) %></th>
+              </tr>
+              <% end %>
+              <tr>
+                <th colspan="3" class="text-end">Subtotal:</th>
+                <th class="text-end"><%= number_to_currency((@order.total_cents - @order.delivery_fee_cents) / 100.0) %></th>
+              </tr>
+              <tr>
+                <th colspan="3" class="text-end">Delivery Fee:</th>
+                <th class="text-end"><%= number_to_currency(@order.delivery_fee_cents / 100.0) %></th>
+              </tr>
+              <tr>
+                <th colspan="3" class="text-end">Total:</th>
+                <th class="text-end"><%= number_to_currency(@order.total_price_in_currency) %></th>
+              </tr>
+            </tfoot>
+          </table>
+          
+          <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+            <%= link_to 'Back to Orders', orders_path, class: 'btn btn-secondary me-md-2' %>
+            <% if is_customer? %>
+              <%= link_to 'Continue Shopping', products_path, class: 'btn btn-primary' %>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

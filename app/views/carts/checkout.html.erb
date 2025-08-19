@@ -1,0 +1,92 @@
+<div class="container mt-5">
+  <h1>Checkout</h1>
+  
+  <div class="row">
+    <div class="col-md-8">
+      <div class="card mb-4">
+        <div class="card-body">
+          <h3>Order Summary</h3>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th class="text-end">Price</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @cart.cart_items.each do |item| %>
+                <tr> 
+                  <td>
+                    <%= item.product.name %>
+                    <% if item.discount_applied? %>
+                      <span class="badge bg-danger">Special Offer</span>
+                    <% end %>
+                  </td>
+                  <td><%= item.quantity %></td>
+                  <td class="text-end">
+                    <% if item.discount_applied? %>
+                      <span class="text-decoration-line-through text-muted"><%= format_price(item.price_cents * item.quantity) %></span><br>
+                      <strong><%= format_price(item.total_price_cents) %></strong><br>
+                      <small class="text-success">You save <%= format_price(item.savings_amount) %></small>
+                    <% else %>
+                      <%= format_price(item.total_price_cents) %>
+                    <% end %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+            <tfoot class="table-group-divider">
+              <% if @cart.total_savings_amount > 0 %>
+              <tr>
+                <td colspan="2" class="text-end">Subtotal:</td>
+                <td class="text-end"><%= format_price(@cart.total_price_cents + @cart.total_savings_amount) %></td>
+              </tr>
+              <tr>
+                <td colspan="2" class="text-end text-success">Special Offer Savings:</td>
+                <td class="text-end text-success">-<%= format_price(@cart.total_savings_amount) %></td>
+              </tr>
+              <% end %>
+              <tr>
+                <th colspan="2" class="text-end">Total:</th>
+                <th class="text-end"><%= format_price(@cart.total_price_cents) %></th>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-body">
+          <%= form_with model: @order, url: orders_path, method: :post, local: true do |f| %>
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+              <%= link_to 'Back to Cart', cart_path, class: 'btn btn-secondary me-md-2' %>
+              <%= f.submit 'Place Order', class: 'btn btn-primary' %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Order Total</h5>
+          <div class="d-flex justify-content-between mb-2">
+            <span>Subtotal:</span>
+            <span><%= format_price(@cart.total_price_cents) %></span>
+          </div>
+          <div class="d-flex justify-content-between mb-2">
+            <span>Delivery Charge:</span>
+            <span><%= format_price(calculate_delivery_fee(@cart.total_price_cents)) %></span>
+          </div>
+          <hr>
+          <div class="d-flex justify-content-between fw-bold">
+            <span>Total:</span>
+            <span><%= format_price(calculate_total_with_delivery(@cart.total_price_cents)) %></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

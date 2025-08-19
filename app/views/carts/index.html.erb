@@ -1,0 +1,139 @@
+<div class="container py-5">
+  <div class="row">
+    <div class="col-12">
+      <h1 class="mb-4">Your Shopping Cart</h1>
+    </div>
+  </div>
+
+  <% if @cart && @cart.cart_items.any? %>
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="table-responsive border rounded shadow-sm">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr class="text-uppercase small text-muted">
+                <th style="width: 40%" class="fw-normal p-3">Product</th>
+                <th class="text-end fw-normal p-3" style="width: 15%">Price</th>
+                <th class="text-center fw-normal p-3" style="width: 25%">Quantity</th>
+                <th class="text-end fw-normal p-3" style="width: 15%">Total</th>
+                <th style="width: 5%" class="p-3"></th>
+              </tr>
+            </thead>
+            <tbody class="border-top-0">
+              <% @cart.cart_items.each do |item| %>
+                <tr>
+                  <td class="p-3">
+                    <div class="d-flex align-items-center">
+                      <div>
+                        <h6 class="mb-0"><%= item.product.name %></h6>
+                        <small class="text-muted">Code: <%= item.product.code %></small>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="text-end p-3"><span class="text-nowrap"><%= format_price(item.price_cents) %></span></td>
+                  <td class="text-center p-3">
+                    <%= form_with url: update_quantity_cart_path(@cart, product_id: item.product_id), method: :patch, class: 'd-flex justify-content-center' do |f| %>
+                      <div class="input-group" style="max-width: 150px;">
+                        <%= f.number_field :quantity, value: item.quantity, min: 1, class: 'form-control text-center' %>
+                        <button type="submit" class="btn btn-outline-primary" title="Update quantity">
+                          <i class="bi bi-arrow-clockwise"></i>
+                        </button>
+                      </div>
+                    <% end %>
+                  </td>
+                  <td class="text-end fw-bold p-3">
+                    <span class="text-nowrap"><%= format_price(item.total_price_cents) %></span>
+                    <% if item.discount_applied? %>
+                      <div class="small text-success">
+                        <i class="bi bi-tag-fill"></i> Special Offer Applied
+                        <div>You saved <%= format_price(item.savings_amount) %></div>
+                      </div>
+                    <% end %>
+                  </td>
+                  <td class="text-end p-3">
+                    <%= button_to update_quantity_cart_path(@cart, product_id: item.product_id, quantity: 0),
+                        method: :patch, 
+                        class: 'btn btn-sm btn-danger',
+                        data: { turbo_confirm: 'Remove this item from your cart?' } do %>
+                      <i class="bi bi-trash"></i> Remove
+                    <% end %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+            <tfoot class="table-group-divider">
+              <tr>
+                <td colspan="5" class="text-end p-3">
+                  <div class="d-flex justify-content-end">
+                    <div class="text-end" style="width: 250px;">
+                      <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted fw-medium">Subtotal:</span>
+                        <span class="fw-medium"><%= format_price(@cart.subtotal) %></span>
+                      </div>
+                      <% delivery_fee = calculate_delivery_fee(@cart.subtotal) %>
+                      <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted fw-medium">Delivery:</span>
+                        <span class="<%= delivery_fee.zero? ? 'text-success fw-medium' : 'fw-medium' %>"><%= delivery_fee.zero? ? 'Free' : format_price(delivery_fee) %></span>
+                      </div>
+                      <div class="d-flex justify-content-between fs-5 fw-bold border-top pt-3 mt-2">
+                        <span>Total:</span>
+                        <span><%= format_price(calculate_total_with_delivery(@cart.subtotal)) %></span>
+                      </div>
+                      <% if delivery_fee > 0 %>
+                        <div class="small text-muted text-end mt-2">
+                          <% if @cart.subtotal < 5000 %>
+                            Add <span class="text-primary fw-medium"><%= format_price(5000 - @cart.subtotal) %></span> more for $2.95 delivery
+                          <% elsif @cart.subtotal < 9000 %>
+                            Add <span class="text-primary fw-medium"><%= format_price(9000 - @cart.subtotal) %></span> more for free delivery
+                          <% end %>
+                        </div>
+                      <% end %>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mt-4 mb-5">
+      <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+          <%= link_to root_path, class: 'btn btn-secondary' do %>
+            <i class="bi bi-arrow-left me-1"></i> Continue Shopping
+          <% end %>
+          
+          <div class="d-flex gap-3">
+            <%= button_to "/carts/#{@cart.id}", 
+                method: :delete, 
+                form: { data: { turbo_confirm: 'Are you sure you want to clear your cart?' } },
+                class: 'btn btn-danger btn-sm' do %>
+              <i class="bi bi-trash me-1"></i> Clear Cart
+            <% end %>
+            
+            <%= link_to checkout_cart_path(@cart), class: 'btn btn-primary' do %>
+              Proceed to Checkout <i class="bi bi-arrow-right ms-1"></i>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% else %>
+    <div class="row">
+      <div class="col-12">
+        <div class="card border-0 shadow-sm rounded-3">
+          <div class="card-body text-center py-5 px-4">
+            <div class="mb-4">
+              <i class="bi bi-cart-x text-muted" style="font-size: 5rem; opacity: 0.3;"></i>
+            </div>
+            <h3 class="h4 mb-3">Your cart is empty</h3>
+            <p class="text-muted mb-4">Looks like you haven't added any items to your cart yet.</p>
+            <%= link_to 'Continue Shopping', root_path, class: 'btn btn-primary px-4' %>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

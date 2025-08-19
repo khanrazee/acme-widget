@@ -1,0 +1,51 @@
+<%= form_with(model: product, html: { class: "product-form" }) do |form| %>
+  <% if product.errors.any? %>
+    <div class="error-messages">
+      <ul>
+        <% product.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="form-section">
+    <h3>Product Information</h3>
+    
+    <div class="form-group">
+      <%= form.label :code %>
+      <%= form.text_field :code, class: "form-control", placeholder: "Enter unique product code", required: true %>
+      <small class="form-text text-muted">A unique identifier for this product (e.g., WIDGET-001)</small>
+    </div>
+
+    <div class="form-group">
+      <%= form.label :name %>
+      <%= form.text_field :name, class: "form-control", placeholder: "Enter product name", required: true %>
+      <small class="form-text text-muted">The name of the product as it will appear to customers</small>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <h3>Pricing</h3>
+    
+    <div class="form-group">
+      <%= form.label :price_in_currency, "Price" %>
+      <div class="price-input-group">
+        <span class="currency-symbol">$</span>
+        <%= form.number_field :price_in_currency, step: "any", min: 0.01, class: "form-control", placeholder: "0.00", required: true %>
+      </div>
+      <small class="form-text text-muted">The price will be stored in cents but displayed in dollars</small>
+    </div>
+    
+    <div class="form-group form-check mt-3">
+      <%= form.check_box :special_offer, class: "form-check-input" %>
+      <%= form.label :special_offer, "Special Offer: Buy One Get Second Half Price", class: "form-check-label" %>
+      <small class="form-text text-muted d-block">When enabled, customers who buy 2 or more of this product will get every second item at half price</small>
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <%= form.submit class: "btn btn-primary" %>
+    <%= link_to "Cancel", products_path, class: "btn btn-outline" %>
+  </div>
+<% end %>
